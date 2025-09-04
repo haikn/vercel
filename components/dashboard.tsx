@@ -1,173 +1,179 @@
-"use client"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { CheckSquare, Clock, Play, CheckCircle, Plus } from "lucide-react"
+import Link from "next/link"
 
-import { useState } from "react"
-import { DashboardColumn } from "./dashboard-column"
-
-interface Block {
+interface Task {
   id: string
-  title: string
-  content: string
+  task_name: string
+  task_description: string
+  status: string
+  created_at: string
+  start_date_time?: string
+  end_date_time?: string
+  task_types?: {
+    id: string
+    name: string
+    color: string
+  }
 }
 
-interface Column {
-  id: string
-  title: string
-  blocks: Block[]
+interface TaskStats {
+  total: number
+  pending: number
+  inProgress: number
+  completed: number
 }
 
-const initialData: Column[] = [
-  {
-    id: "column-1",
-    title: "To Do",
-    blocks: [
-      {
-        id: "block-1",
-        title: "Project Planning",
-        content: "Define project scope and requirements for the new dashboard feature.",
-      },
-      {
-        id: "block-2",
-        title: "Design Review",
-        content: "Review and approve the latest design mockups from the design team.",
-      },
-      {
-        id: "block-3",
-        title: "Database Schema",
-        content: "Create database schema for user management and block storage.",
-      },
-    ],
-  },
-  {
-    id: "column-2",
-    title: "In Progress",
-    blocks: [
-      {
-        id: "block-4",
-        title: "API Development",
-        content: "Implement REST API endpoints for block management operations.",
-      },
-      {
-        id: "block-5",
-        title: "Frontend Components",
-        content: "Build reusable React components for the dashboard interface.",
-      },
-      {
-        id: "block-6",
-        title: "Authentication",
-        content: "Integrate user authentication and authorization system.",
-      },
-    ],
-  },
-  {
-    id: "column-3",
-    title: "Done",
-    blocks: [
-      {
-        id: "block-7",
-        title: "Environment Setup",
-        content: "Configure development environment and project dependencies.",
-      },
-      {
-        id: "block-8",
-        title: "Initial Wireframes",
-        content: "Create low-fidelity wireframes for dashboard layout and flow.",
-      },
-      {
-        id: "block-9",
-        title: "Color Palette",
-        content: "Define brand colors and design system tokens for consistency.",
-      },
-    ],
-  },
-]
+interface DashboardProps {
+  latestTasks: Task[]
+  taskStats: TaskStats
+}
 
-export function Dashboard() {
-  const [columns, setColumns] = useState<Column[]>(initialData)
-  const [draggedBlock, setDraggedBlock] = useState<{ blockId: string; sourceColumnId: string } | null>(null)
-
-  const handleDragStart = (blockId: string, sourceColumnId: string) => {
-    setDraggedBlock({ blockId, sourceColumnId })
-  }
-
-  const handleDrop = (blockId: string, targetColumnId: string) => {
-    if (!draggedBlock || draggedBlock.sourceColumnId === targetColumnId) {
-      setDraggedBlock(null)
-      return
+export function Dashboard({ latestTasks, taskStats }: DashboardProps) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-100 text-green-800"
+      case "in_progress":
+        return "bg-blue-100 text-blue-800"
+      default:
+        return "bg-gray-100 text-gray-800"
     }
-
-    setColumns((prevColumns) => {
-      const newColumns = [...prevColumns]
-      const sourceColumnIndex = newColumns.findIndex((col) => col.id === draggedBlock.sourceColumnId)
-      const targetColumnIndex = newColumns.findIndex((col) => col.id === targetColumnId)
-
-      if (sourceColumnIndex === -1 || targetColumnIndex === -1) return prevColumns
-
-      const sourceColumn = newColumns[sourceColumnIndex]
-      const blockIndex = sourceColumn.blocks.findIndex((block) => block.id === blockId)
-
-      if (blockIndex === -1) return prevColumns
-
-      const [movedBlock] = sourceColumn.blocks.splice(blockIndex, 1)
-      const targetColumn = newColumns[targetColumnIndex]
-      targetColumn.blocks.push(movedBlock)
-
-      return newColumns
-    })
-
-    setDraggedBlock(null)
   }
 
-  const handleAddBlock = (columnId: string, title: string, content: string) => {
-    const newBlock: Block = {
-      id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      title,
-      content,
-    }
-
-    setColumns((prevColumns) =>
-      prevColumns.map((column) =>
-        column.id === columnId ? { ...column, blocks: [...column.blocks, newBlock] } : column,
-      ),
-    )
-  }
-
-  const handleEditBlock = (blockId: string, title: string, content: string) => {
-    setColumns((prevColumns) =>
-      prevColumns.map((column) => ({
-        ...column,
-        blocks: column.blocks.map((block) => (block.id === blockId ? { ...block, title, content } : block)),
-      })),
-    )
-  }
-
-  const handleDeleteBlock = (blockId: string) => {
-    if (confirm("Are you sure you want to delete this block?")) {
-      setColumns((prevColumns) =>
-        prevColumns.map((column) => ({
-          ...column,
-          blocks: column.blocks.filter((block) => block.id !== blockId),
-        })),
-      )
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle className="h-4 w-4" />
+      case "in_progress":
+        return <Play className="h-4 w-4" />
+      default:
+        return <Clock className="h-4 w-4" />
     }
   }
 
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {columns.map((column) => (
-          <DashboardColumn
-            key={column.id}
-            id={column.id}
-            title={column.title}
-            blocks={column.blocks}
-            onDragStart={handleDragStart}
-            onDrop={handleDrop}
-            onAddBlock={handleAddBlock}
-            onEditBlock={handleEditBlock}
-            onDeleteBlock={handleDeleteBlock}
-          />
-        ))}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-0 gap-0">
+          <CardHeader className="bg-black text-white p-4">
+            <CardTitle className="text-white font-bold flex items-center gap-2">
+              <CheckSquare className="h-5 w-5" />
+              Total Tasks
+            </CardTitle>
+          </CardHeader>
+          <CardContent style={{ backgroundColor: "#f9d022" }} className="text-white p-4">
+            <div className="text-2xl font-bold text-white">{taskStats.total}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="p-0 gap-0">
+          <CardHeader className="bg-black text-white p-4">
+            <CardTitle className="text-white font-bold flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Pending
+            </CardTitle>
+          </CardHeader>
+          <CardContent style={{ backgroundColor: "#f9d022" }} className="text-white p-4">
+            <div className="text-2xl font-bold text-white">{taskStats.pending}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="p-0 gap-0">
+          <CardHeader className="bg-black text-white p-4">
+            <CardTitle className="text-white font-bold flex items-center gap-2">
+              <Play className="h-5 w-5" />
+              In Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent style={{ backgroundColor: "#f9d022" }} className="text-white p-4">
+            <div className="text-2xl font-bold text-white">{taskStats.inProgress}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="p-0 gap-0">
+          <CardHeader className="bg-black text-white p-4">
+            <CardTitle className="text-white font-bold flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Completed
+            </CardTitle>
+          </CardHeader>
+          <CardContent style={{ backgroundColor: "#f9d022" }} className="text-white p-4">
+            <div className="text-2xl font-bold text-white">{taskStats.completed}</div>
+          </CardContent>
+        </Card>
       </div>
+
+      <Card className="p-0 gap-0">
+        <CardHeader className="bg-black text-white p-6">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-white font-bold">Latest Tasks</CardTitle>
+            <div className="flex gap-2">
+              <Link href="/tasks">
+                <Button size="sm" className="bg-white text-black hover:bg-gray-100">
+                  View All Tasks
+                </Button>
+              </Link>
+              <Link href="/tasks">
+                <Button size="sm" className="bg-[#f9d022] text-black hover:bg-yellow-400">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Task
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent style={{ backgroundColor: "#f9d022" }} className="text-white p-6">
+          {latestTasks.length > 0 ? (
+            <div className="space-y-4">
+              {latestTasks.map((task) => (
+                <div key={task.id} className="bg-white bg-opacity-10 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-medium text-white">{task.task_name}</h3>
+                    <div className="flex items-center gap-2">
+                      {task.task_types && (
+                        <span
+                          className="px-2 py-1 rounded text-xs font-medium"
+                          style={{ backgroundColor: task.task_types.color, color: "white" }}
+                        >
+                          {task.task_types.name}
+                        </span>
+                      )}
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${getStatusColor(task.status)}`}
+                      >
+                        {getStatusIcon(task.status)}
+                        {task.status.replace("_", " ")}
+                      </span>
+                    </div>
+                  </div>
+
+                  {task.task_description && (
+                    <p className="text-white text-sm mb-2 opacity-90">{task.task_description}</p>
+                  )}
+
+                  <div className="flex items-center justify-between text-xs text-white opacity-75">
+                    <span>Created: {new Date(task.created_at).toLocaleDateString()}</span>
+                    {task.end_date_time && <span>Due: {new Date(task.end_date_time).toLocaleDateString()}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <CheckSquare className="h-12 w-12 text-white opacity-50 mx-auto mb-4" />
+              <p className="text-white mb-4">No tasks found. Create your first task to get started!</p>
+              <Link href="/tasks">
+                <Button className="bg-black text-white hover:bg-gray-800">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create First Task
+                </Button>
+              </Link>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
