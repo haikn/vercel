@@ -18,6 +18,9 @@ CREATE POLICY "Users can view own profile" ON users
 CREATE POLICY "Users can update own profile" ON users
   FOR UPDATE USING (auth.uid()::text = id::text);
 
+-- Enable pgcrypto extension for password hashing
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Insert test account
 INSERT INTO users (username, email, password_hash) VALUES 
 ('namtest', 'namtest@example.com', crypt('123456', gen_salt('bf')))
@@ -27,6 +30,3 @@ ON CONFLICT (username) DO NOTHING;
 INSERT INTO users (username, email, password_hash) VALUES 
 ('demo', 'demo@example.com', crypt('password123', gen_salt('bf')))
 ON CONFLICT (username) DO NOTHING;
-
--- Enable pgcrypto extension for password hashing
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
