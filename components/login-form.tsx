@@ -48,13 +48,6 @@ export function LoginForm() {
         </CardHeader>
         <CardContent className="py-10 px-6" style={{ backgroundColor: "#f9d022" }}>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="text-sm text-white text-center mb-4 p-3 bg-black/20 rounded-md">
-              <strong>Test Accounts:</strong>
-              <br />
-              Username: namtest | Password: 123456
-              <br />
-              Username: demo | Password: password123
-            </div>
             {error && <div className="text-sm text-red-600 text-center mb-4 p-3 bg-red-100 rounded-md">{error}</div>}
             <div className="space-y-2">
               <Label htmlFor="username" className="text-white font-medium">
