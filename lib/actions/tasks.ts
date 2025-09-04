@@ -1,11 +1,11 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createServerClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 export async function getTasks() {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   const {
     data: { user },
@@ -37,7 +37,7 @@ export async function getTasks() {
 }
 
 export async function createTask(formData: any) {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   const {
     data: { user },
@@ -61,7 +61,7 @@ export async function createTask(formData: any) {
 }
 
 export async function updateTask(taskId: string, formData: any) {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   const {
     data: { user },
@@ -82,7 +82,7 @@ export async function updateTask(taskId: string, formData: any) {
 }
 
 export async function deleteTask(taskId: string) {
-  const supabase = await createClient()
+  const supabase = await createServerClient()
 
   const {
     data: { user },

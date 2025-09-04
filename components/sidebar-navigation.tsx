@@ -3,7 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, CheckSquare, Tag } from "lucide-react"
+import { LayoutDashboard, CheckSquare, Tag, LogOut } from "lucide-react"
+import { signOut } from "@/lib/actions/auth"
+import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
+import { getCurrentUser } from "@/lib/actions/auth"
 
 const navigationItems = [
   {
@@ -25,6 +29,19 @@ const navigationItems = [
 
 export function SidebarNavigation() {
   const pathname = usePathname()
+  const [user, setUser] = useState<{ username: string; email: string } | null>(null)
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const currentUser = await getCurrentUser()
+      setUser(currentUser)
+    }
+    loadUser()
+  }, [])
+
+  const handleLogout = async () => {
+    await signOut()
+  }
 
   return (
     <div className="w-64 bg-black text-white h-screen flex flex-col">
@@ -57,15 +74,24 @@ export function SidebarNavigation() {
       </nav>
 
       <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 bg-[#f9d022] rounded-full flex items-center justify-center">
-            <span className="text-black font-medium text-sm">U</span>
+            <span className="text-black font-medium text-sm">{user?.username?.charAt(0).toUpperCase() || "U"}</span>
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-white">User</p>
-            <p className="text-xs text-gray-400">user@example.com</p>
+            <p className="text-sm font-medium text-white">{user?.username || "User"}</p>
+            <p className="text-xs text-gray-400">{user?.email || "user@example.com"}</p>
           </div>
         </div>
+        <Button
+          onClick={handleLogout}
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start text-white hover:bg-gray-800 hover:text-white"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Sign Out
+        </Button>
       </div>
     </div>
   )
