@@ -8,10 +8,14 @@ export async function signIn(username: string, password: string) {
   const supabase = await createServerClient()
 
   try {
+    console.log("[v0] Attempting login for username:", username)
+
     const { data: users, error } = await supabase
       .from("users")
       .select("id, username, email, password_hash")
       .eq("username", username)
+
+    console.log("[v0] Database query result:", { users, error })
 
     if (error || !users || users.length === 0) {
       console.log("[v0] User not found:", username)
@@ -19,11 +23,16 @@ export async function signIn(username: string, password: string) {
     }
 
     const user = users[0]
+    console.log("[v0] Found user:", { id: user.id, username: user.username, email: user.email })
+
+    console.log("[v0] Checking password for:", username, "with password:", password)
 
     // For now, let's do a simple password check (in production, you'd use bcrypt)
     // Since we're using test data, let's check if it matches our test accounts
     const isValidPassword =
       (username === "namtest" && password === "123456") || (username === "demo" && password === "password123")
+
+    console.log("[v0] Password validation result:", isValidPassword)
 
     if (!isValidPassword) {
       console.log("[v0] Invalid password for user:", username)
