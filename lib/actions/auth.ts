@@ -11,19 +11,46 @@ export async function signIn(username: string, password: string) {
     console.log("[v0] Attempting login for username:", username)
     console.log("[v0] Password length:", password.length)
 
+    // First, let's try to get all users to see if we can access the table at all
+    const { data: allUsers, error: allUsersError } = await supabase.from("users").select("*")
+
+    console.log("[v0] All users query result:", { allUsers, allUsersError })
+    console.log("[v0] Number of users found:", allUsers?.length || 0)
+
+    // Try the specific user query with more debugging
     const { data: users, error } = await supabase
       .from("users")
       .select("id, username, email, password_hash")
       .eq("username", username)
+      .single()
 
-    console.log("[v0] Database query result:", { users, error })
+    console.log("[v0] Single user query result:", { users, error })
 
-    if (error || !users || users.length === 0) {
-      console.log("[v0] User not found:", username)
-      return { error: "Invalid username or password" }
+    let usersArray = null // Declare usersArray variable
+
+    // If single() fails, try without single()
+    if (error || !users) {
+      console.log("[v0] Single query failed, trying array query")
+      const { data: arrayData, error: arrayError } = await supabase
+        .from("users")
+        .select("id, username, email, password_hash")
+        .eq("username", username)
+
+      console.log("[v0] Array query result:", { arrayData, arrayError })
+      usersArray = arrayData // Assign arrayData to usersArray
+
+      if (arrayError || !usersArray || usersArray.length === 0) {
+        console.log("[v0] User not found:", username)
+        return { error: "Invalid username or password" }
+      }
+
+      const user = usersArray[0]
+      console.log("[v0] Found user from array:", { id: user.id, username: user.username, email: user.email })
+    } else {
+      console.log("[v0] Found user from single:", { id: users.id, username: users.username, email: users.email })
     }
 
-    const user = users[0]
+    const user = users || usersArray[0]
     console.log("[v0] Found user:", { id: user.id, username: user.username, email: user.email })
     console.log("[v0] Password hash from DB:", user.password_hash)
 
