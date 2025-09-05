@@ -27,14 +27,14 @@ export async function signIn(username: string, password: string) {
 
     console.log("[v0] Checking password for:", username, "with password:", password)
 
-    // For now, let's do a simple password check (in production, you'd use bcrypt)
-    // Since we're using test data, let's check if it matches our test accounts
-    const isValidPassword =
-      (username === "namtest" && password === "123456") || (username === "demo" && password === "password123")
+    const { data: passwordResult, error: passwordError } = await supabase.rpc("verify_password", {
+      input_password: password,
+      stored_hash: user.password_hash,
+    })
 
-    console.log("[v0] Password validation result:", isValidPassword)
+    console.log("[v0] Password verification result:", { passwordResult, passwordError })
 
-    if (!isValidPassword) {
+    if (passwordError || !passwordResult) {
       console.log("[v0] Invalid password for user:", username)
       return { error: "Invalid username or password" }
     }
