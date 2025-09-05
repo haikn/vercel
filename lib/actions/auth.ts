@@ -9,6 +9,7 @@ export async function signIn(username: string, password: string) {
 
   try {
     console.log("[v0] Attempting login for username:", username)
+    console.log("[v0] Password length:", password.length)
 
     const { data: users, error } = await supabase
       .from("users")
@@ -24,18 +25,36 @@ export async function signIn(username: string, password: string) {
 
     const user = users[0]
     console.log("[v0] Found user:", { id: user.id, username: user.username, email: user.email })
+    console.log("[v0] Password hash from DB:", user.password_hash)
 
-    console.log("[v0] Checking password for:", username, "with password:", password)
+    console.log("[v0] About to call verify_password RPC with:", {
+      input_password: password,
+      stored_hash: user.password_hash,
+    })
 
     const { data: passwordResult, error: passwordError } = await supabase.rpc("verify_password", {
       input_password: password,
       stored_hash: user.password_hash,
     })
 
-    console.log("[v0] Password verification result:", { passwordResult, passwordError })
+    console.log("[v0] RPC call completed")
+    console.log("[v0] Password verification result:", passwordResult)
+    console.log("[v0] Password verification error:", passwordError)
+    console.log("[v0] Type of passwordResult:", typeof passwordResult)
 
-    if (passwordError || !passwordResult) {
-      console.log("[v0] Invalid password for user:", username)
+    const { data: testRpc, error: testRpcError } = await supabase.rpc("verify_password", {
+      input_password: "test",
+      stored_hash: "$2a$06$test",
+    })
+    console.log("[v0] Test RPC call result:", { testRpc, testRpcError })
+
+    if (passwordError) {
+      console.log("[v0] Password verification failed with error:", passwordError)
+      return { error: "Invalid username or password" }
+    }
+
+    if (!passwordResult) {
+      console.log("[v0] Password verification returned false")
       return { error: "Invalid username or password" }
     }
 
