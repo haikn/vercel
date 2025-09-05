@@ -8,7 +8,6 @@ export async function updateSession(request: NextRequest) {
   try {
     const userSession = request.cookies.get("user_session")
 
-    // Check if user is trying to access protected routes
     if (
       request.nextUrl.pathname.startsWith("/dashboard") ||
       request.nextUrl.pathname.startsWith("/tasks") ||
@@ -33,17 +32,7 @@ export async function updateSession(request: NextRequest) {
       }
     }
 
-    if (request.nextUrl.pathname === "/" && userSession && userSession.value) {
-      try {
-        JSON.parse(userSession.value)
-        console.log("[v0] User already logged in, redirecting to dashboard")
-        const url = request.nextUrl.clone()
-        url.pathname = "/dashboard"
-        return NextResponse.redirect(url)
-      } catch (error) {
-        // Invalid session, let them stay on login page
-      }
-    }
+    // Let the login form handle navigation after successful authentication
   } catch (error) {
     console.error("[v0] Middleware error:", error)
   }
