@@ -1,14 +1,17 @@
 import type React from "react"
 import { SidebarNavigation } from "@/components/sidebar-navigation"
+import { getCurrentUser } from "@/lib/actions/auth"
 
-export default function TaskTypesLayout({
+export default async function TaskTypesLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const user = await getCurrentUser()
+
   return (
     <div className="flex min-h-screen bg-background">
-      <SidebarNavigation />
+      <SidebarNavigation user={user} />
       <div className="flex-1">{children}</div>
     </div>
   )

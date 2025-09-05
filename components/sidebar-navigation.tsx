@@ -6,8 +6,6 @@ import { cn } from "@/lib/utils"
 import { LayoutDashboard, CheckSquare, Tag, LogOut } from "lucide-react"
 import { signOut } from "@/lib/actions/auth"
 import { Button } from "@/components/ui/button"
-import { useState, useEffect } from "react"
-import { getCurrentUser } from "@/lib/actions/auth"
 
 const navigationItems = [
   {
@@ -27,17 +25,12 @@ const navigationItems = [
   },
 ]
 
-export function SidebarNavigation() {
-  const pathname = usePathname()
-  const [user, setUser] = useState<{ username: string; email: string } | null>(null)
+interface SidebarNavigationProps {
+  user: { username: string; email: string } | null
+}
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const currentUser = await getCurrentUser()
-      setUser(currentUser)
-    }
-    loadUser()
-  }, [])
+export function SidebarNavigation({ user }: SidebarNavigationProps) {
+  const pathname = usePathname()
 
   const handleLogout = async () => {
     await signOut()
