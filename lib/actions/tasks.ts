@@ -51,6 +51,7 @@ export async function createTask(formData: any) {
     const taskData = {
       ...formData,
       user_id: user.id,
+      task_type_id: formData.task_type_id === "" ? null : formData.task_type_id,
     }
 
     console.log("[v0] Inserting task data:", taskData)
