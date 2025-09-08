@@ -48,6 +48,20 @@ export async function createTask(formData: any) {
 
     const supabase = await createServerClient()
 
+    // Check if user exists in users table
+    const { data: userExists, error: userCheckError } = await supabase
+      .from("users")
+      .select("id, username")
+      .eq("id", user.id)
+      .single()
+
+    console.log("[v0] User check result:", { userExists, userCheckError })
+
+    if (userCheckError || !userExists) {
+      console.log("[v0] User not found in database, user_id:", user.id)
+      return { success: false, error: "User not found in database" }
+    }
+
     const taskData = {
       ...formData,
       user_id: user.id,
