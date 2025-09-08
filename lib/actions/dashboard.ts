@@ -1,18 +1,16 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { getCurrentUser } from "@/lib/actions/auth"
 import { redirect } from "next/navigation"
 
 export async function getLatestTasks(limit = 10) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-  if (authError || !user) {
+  const user = await getCurrentUser()
+  if (!user) {
     redirect("/")
   }
+
+  const supabase = await createClient()
 
   const { data: tasks, error } = await supabase
     .from("tasks")
@@ -37,15 +35,12 @@ export async function getLatestTasks(limit = 10) {
 }
 
 export async function getTaskStats() {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-  if (authError || !user) {
+  const user = await getCurrentUser()
+  if (!user) {
     redirect("/")
   }
+
+  const supabase = await createClient()
 
   const [totalTasks, pendingTasks, inProgressTasks, completedTasks] = await Promise.all([
     supabase.from("tasks").select("id", { count: "exact" }).eq("user_id", user.id),
