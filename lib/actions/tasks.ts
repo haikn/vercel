@@ -3,17 +3,15 @@
 import { createServerClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { getCurrentUser } from "./auth"
 
 export async function getTasks() {
-  const supabase = await createServerClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-  if (authError || !user) {
+  const user = await getCurrentUser()
+  if (!user) {
     redirect("/")
   }
+
+  const supabase = await createServerClient()
 
   const { data: tasks, error } = await supabase
     .from("tasks")
@@ -37,15 +35,12 @@ export async function getTasks() {
 }
 
 export async function createTask(formData: any) {
-  const supabase = await createServerClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-  if (authError || !user) {
+  const user = await getCurrentUser()
+  if (!user) {
     redirect("/")
   }
+
+  const supabase = await createServerClient()
 
   const { error } = await supabase.from("tasks").insert({
     ...formData,
@@ -61,15 +56,12 @@ export async function createTask(formData: any) {
 }
 
 export async function updateTask(taskId: string, formData: any) {
-  const supabase = await createServerClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-  if (authError || !user) {
+  const user = await getCurrentUser()
+  if (!user) {
     redirect("/")
   }
+
+  const supabase = await createServerClient()
 
   const { error } = await supabase.from("tasks").update(formData).eq("id", taskId).eq("user_id", user.id)
 
@@ -82,15 +74,12 @@ export async function updateTask(taskId: string, formData: any) {
 }
 
 export async function deleteTask(taskId: string) {
-  const supabase = await createServerClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-  if (authError || !user) {
+  const user = await getCurrentUser()
+  if (!user) {
     redirect("/")
   }
+
+  const supabase = await createServerClient()
 
   const { error } = await supabase.from("tasks").delete().eq("id", taskId).eq("user_id", user.id)
 
