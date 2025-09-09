@@ -130,7 +130,7 @@ export function Dashboard({ latestTasks, taskStats }: DashboardProps) {
               {latestTasks.map((task) => (
                 <div key={task.id} className="bg-white bg-opacity-10 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-medium text-white">{task.task_name}</h3>
+                    <h3 className="font-medium text-black">{task.task_name}</h3>
                     <div className="flex items-center gap-2">
                       {task.task_types && (
                         <span
@@ -150,10 +150,10 @@ export function Dashboard({ latestTasks, taskStats }: DashboardProps) {
                   </div>
 
                   {task.task_description && (
-                    <p className="text-white text-sm mb-2 opacity-90">{task.task_description}</p>
+                    <p className="text-black text-sm mb-2 opacity-90">{task.task_description}</p>
                   )}
 
-                  <div className="flex items-center justify-between text-xs text-white opacity-75">
+                  <div className="flex items-center justify-between text-xs text-black opacity-75">
                     <span>Created: {new Date(task.created_at).toLocaleDateString()}</span>
                     {task.end_date_time && <span>Due: {new Date(task.end_date_time).toLocaleDateString()}</span>}
                   </div>
@@ -162,8 +162,8 @@ export function Dashboard({ latestTasks, taskStats }: DashboardProps) {
             </div>
           ) : (
             <div className="text-center py-8">
-              <CheckSquare className="h-12 w-12 text-white opacity-50 mx-auto mb-4" />
-              <p className="text-white mb-4">No tasks found. Create your first task to get started!</p>
+              <CheckSquare className="h-12 w-12 text-black opacity-50 mx-auto mb-4" />
+              <p className="text-black mb-4">No tasks found. Create your first task to get started!</p>
               <Link href="/tasks">
                 <Button className="bg-black text-white hover:bg-gray-800">
                   <Plus className="h-4 w-4 mr-2" />
