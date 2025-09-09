@@ -44,11 +44,19 @@ export async function createTask(formData: any) {
       redirect("/")
     }
 
-    console.log("[v0] User found:", user.id)
+    console.log("[v0] User from cookie:", user)
+    console.log("[v0] User ID from cookie:", user.id)
+    console.log("[v0] Expected user IDs from database:")
+    console.log("[v0] - namtest: 2cac32f5-b35e-476b-a505-bc17a3e83aa1")
+    console.log("[v0] - demo: f5332bc6-b71f-4e87-b203-9bd0375581e6")
 
     const supabase = await createServerClient()
 
-    // Check if user exists in users table
+    const { data: allUsers, error: allUsersError } = await supabase.from("users").select("id, username, email")
+
+    console.log("[v0] All users in database:", allUsers)
+    console.log("[v0] All users error:", allUsersError)
+
     const { data: userExists, error: userCheckError } = await supabase
       .from("users")
       .select("id, username")
