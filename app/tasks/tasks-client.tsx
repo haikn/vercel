@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TaskForm } from "@/components/task-form"
 import { Plus, Edit, Trash2 } from "lucide-react"
-import { createTask, updateTask, deleteTask } from "@/lib/actions/tasks"
+import { createTask, updateTask, deleteTask, getTasks } from "@/lib/actions/tasks"
 
 interface TasksClientProps {
   initialTasks: any[]
@@ -13,15 +13,26 @@ interface TasksClientProps {
 }
 
 export function TasksClient({ initialTasks, taskTypes }: TasksClientProps) {
+  const [tasks, setTasks] = useState(initialTasks)
   const [showForm, setShowForm] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [isPending, startTransition] = useTransition()
+
+  const refreshTasks = async () => {
+    try {
+      const updatedTasks = await getTasks()
+      setTasks(updatedTasks)
+    } catch (error) {
+      console.error("Failed to refresh tasks:", error)
+    }
+  }
 
   const handleCreateTask = async (taskData: any) => {
     startTransition(async () => {
       try {
         await createTask(taskData)
         setShowForm(false)
+        await refreshTasks()
       } catch (error) {
         console.error("Failed to create task:", error)
         alert("Failed to create task. Please try again.")
@@ -37,6 +48,7 @@ export function TasksClient({ initialTasks, taskTypes }: TasksClientProps) {
         await updateTask(editingTask.id, taskData)
         setEditingTask(null)
         setShowForm(false)
+        await refreshTasks()
       } catch (error) {
         console.error("Failed to update task:", error)
         alert("Failed to update task. Please try again.")
@@ -50,6 +62,7 @@ export function TasksClient({ initialTasks, taskTypes }: TasksClientProps) {
     startTransition(async () => {
       try {
         await deleteTask(taskId)
+        await refreshTasks()
       } catch (error) {
         console.error("Failed to delete task:", error)
         alert("Failed to delete task. Please try again.")
@@ -67,6 +80,10 @@ export function TasksClient({ initialTasks, taskTypes }: TasksClientProps) {
         return "bg-gray-100 text-gray-800"
     }
   }
+
+  useEffect(() => {
+    refreshTasks()
+  }, [])
 
   if (showForm) {
     return (
@@ -103,7 +120,7 @@ export function TasksClient({ initialTasks, taskTypes }: TasksClientProps) {
       </div>
 
       <div className="grid gap-4">
-        {initialTasks.map((task) => (
+        {tasks.map((task) => (
           <Card key={task.id} className="p-0 gap-0">
             <CardHeader className="bg-black text-white p-4">
               <div className="flex items-center justify-between">
@@ -171,7 +188,7 @@ export function TasksClient({ initialTasks, taskTypes }: TasksClientProps) {
           </Card>
         ))}
 
-        {initialTasks.length === 0 && (
+        {tasks.length === 0 && (
           <Card className="p-0 gap-0">
             <CardContent style={{ backgroundColor: "#f9d022" }} className="text-white p-8 text-center">
               <p className="text-white">No tasks found. Create your first task to get started!</p>

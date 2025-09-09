@@ -1,26 +1,37 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TaskTypeForm } from "@/components/task-type-form"
 import { Plus, Edit, Trash2 } from "lucide-react"
-import { createTaskType, updateTaskType, deleteTaskType } from "@/lib/actions/task-types"
+import { createTaskType, updateTaskType, deleteTaskType, getTaskTypes } from "@/lib/actions/task-types"
 
 interface TaskTypesClientProps {
   initialTaskTypes: any[]
 }
 
 export function TaskTypesClient({ initialTaskTypes }: TaskTypesClientProps) {
+  const [taskTypes, setTaskTypes] = useState(initialTaskTypes)
   const [showForm, setShowForm] = useState(false)
   const [editingTaskType, setEditingTaskType] = useState(null)
   const [isPending, startTransition] = useTransition()
+
+  const refreshTaskTypes = async () => {
+    try {
+      const updatedTaskTypes = await getTaskTypes()
+      setTaskTypes(updatedTaskTypes)
+    } catch (error) {
+      console.error("Failed to refresh task types:", error)
+    }
+  }
 
   const handleCreateTaskType = async (taskTypeData: any) => {
     startTransition(async () => {
       try {
         await createTaskType(taskTypeData)
         setShowForm(false)
+        await refreshTaskTypes()
       } catch (error) {
         console.error("Failed to create task type:", error)
         alert("Failed to create task type. Please try again.")
@@ -36,6 +47,7 @@ export function TaskTypesClient({ initialTaskTypes }: TaskTypesClientProps) {
         await updateTaskType(editingTaskType.id, taskTypeData)
         setEditingTaskType(null)
         setShowForm(false)
+        await refreshTaskTypes()
       } catch (error) {
         console.error("Failed to update task type:", error)
         alert("Failed to update task type. Please try again.")
@@ -49,12 +61,17 @@ export function TaskTypesClient({ initialTaskTypes }: TaskTypesClientProps) {
     startTransition(async () => {
       try {
         await deleteTaskType(taskTypeId)
+        await refreshTaskTypes()
       } catch (error) {
         console.error("Failed to delete task type:", error)
         alert("Failed to delete task type. Please try again.")
       }
     })
   }
+
+  useEffect(() => {
+    refreshTaskTypes()
+  }, [])
 
   if (showForm) {
     return (
@@ -90,7 +107,7 @@ export function TaskTypesClient({ initialTaskTypes }: TaskTypesClientProps) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {initialTaskTypes.map((taskType) => (
+        {taskTypes.map((taskType) => (
           <Card key={taskType.id} className="p-0 gap-0">
             <CardHeader className="bg-black text-white p-4">
               <CardTitle className="text-white font-bold flex items-center gap-2">
@@ -129,7 +146,7 @@ export function TaskTypesClient({ initialTaskTypes }: TaskTypesClientProps) {
           </Card>
         ))}
 
-        {initialTaskTypes.length === 0 && (
+        {taskTypes.length === 0 && (
           <Card className="p-0 gap-0 md:col-span-2 lg:col-span-3">
             <CardContent style={{ backgroundColor: "#f9d022" }} className="text-white p-8 text-center">
               <p className="text-white">No task types found. Create your first task type to get started!</p>
