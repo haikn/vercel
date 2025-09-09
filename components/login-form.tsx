@@ -50,7 +50,7 @@ export function LoginForm() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && <div className="text-sm text-red-600 text-center mb-4 p-3 bg-red-100 rounded-md">{error}</div>}
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-white font-medium">
+              <Label htmlFor="username" className="text-black font-medium">
                 Username
               </Label>
               <Input
@@ -64,7 +64,7 @@ export function LoginForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white font-medium">
+              <Label htmlFor="password" className="text-black font-medium">
                 Password
               </Label>
               <Input
